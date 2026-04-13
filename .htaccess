@@ -1,0 +1,43 @@
+RewriteEngine On
+
+# Force HTTPS (décommenter en production)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# URLs propres pour les produits
+RewriteRule ^produit/([a-z0-9\-]+)/?$ produit.php?slug=$1 [L,QSA]
+
+# Cacher les extensions .php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-zA-Z0-9_-]+)$ $1.php [L]
+
+# Page 404
+ErrorDocument 404 /matelcom/404.php
+
+# Protéger les dossiers sensibles
+<FilesMatch "\.(sql|log|env)$">
+  Require all denied
+</FilesMatch>
+
+# Protéger le dossier includes
+<IfModule mod_rewrite.c>
+  RewriteRule ^includes/ - [F,L]
+  RewriteRule ^var/ - [F,L]
+  RewriteRule ^libs/ - [F,L]
+</IfModule>
+
+# Cache navigateur
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType text/css "access plus 1 week"
+  ExpiresByType application/javascript "access plus 1 week"
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json
+</IfModule>
