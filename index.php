@@ -157,8 +157,26 @@ section{padding:90px 5%;}
 .product-actions{display:flex;gap:8px;}
 .product-btn{flex:1;text-align:center;background:var(--red);color:white;padding:10px;border-radius:8px;font-weight:600;font-size:.84rem;text-decoration:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;}
 .product-btn:hover{background:var(--red-dark);}
+.product-btn-compare{flex:1;text-align:center;background:white;color:var(--gray-800);padding:10px;border-radius:8px;font-weight:700;font-size:.82rem;text-decoration:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--gray-300);cursor:pointer;font-family:'Inter',sans-serif;}
+.product-btn-compare:hover{border-color:var(--red);color:var(--red);background:var(--red-pale);}
+.product-btn-compare.active{background:var(--gray-900);border-color:var(--gray-900);color:white;}
 .product-btn-wa{flex:0 0 44px;background:#25D366;color:white;padding:10px;border-radius:8px;text-decoration:none;display:flex;align-items:center;justify-content:center;transition:all .2s;}
 .product-btn-wa:hover{background:#1ea952;}
+.compare-dock{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(120px);width:min(1000px,calc(100% - 32px));background:rgba(26,26,46,.96);color:white;border:1px solid rgba(255,255,255,.08);border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.28);padding:16px 18px;z-index:1200;transition:transform .3s ease,opacity .3s ease;opacity:0;backdrop-filter:blur(18px);}
+.compare-dock.open{transform:translateX(-50%) translateY(0);opacity:1;}
+.compare-dock-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px;}
+.compare-dock-title{font-family:'Poppins',sans-serif;font-size:.98rem;font-weight:700;display:flex;align-items:center;gap:10px;}
+.compare-dock-sub{font-size:.78rem;color:rgba(255,255,255,.58);}
+.compare-dock-content{display:flex;align-items:center;gap:16px;justify-content:space-between;flex-wrap:wrap;}
+.compare-pills{display:flex;gap:10px;flex-wrap:wrap;flex:1;}
+.compare-pill{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);padding:8px 10px;border-radius:999px;font-size:.8rem;}
+.compare-pill button{width:22px;height:22px;border:none;border-radius:999px;background:rgba(255,255,255,.12);color:white;cursor:pointer;}
+.compare-pill button:hover{background:rgba(255,255,255,.2);}
+.compare-dock-actions{display:flex;align-items:center;gap:10px;}
+.compare-link{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:white;text-decoration:none;padding:11px 18px;border-radius:12px;font-weight:700;font-size:.84rem;box-shadow:0 12px 26px rgba(211,47,47,.28);}
+.compare-link:hover{background:var(--red-dark);}
+.compare-clear{background:transparent;color:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.14);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600;}
+.compare-clear:hover{background:rgba(255,255,255,.08);color:white;}
 
 /* ── AVANTAGES ── */
 #avantages{background:white;}
@@ -269,6 +287,10 @@ footer{background:var(--gray-900);color:rgba(255,255,255,.6);padding:60px 5% 30p
   .footer-top{grid-template-columns:1fr;}
   .hero-cards{grid-template-columns:1fr 1fr;max-width:300px;margin:0 auto;}
   .products-grid{grid-template-columns:1fr;}
+  .compare-dock{bottom:12px;padding:14px;}
+  .compare-dock-content{flex-direction:column;align-items:stretch;}
+  .compare-dock-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;}
+  .compare-link,.compare-clear{justify-content:center;}
 }
 </style>
 </head>
@@ -373,6 +395,7 @@ footer{background:var(--gray-900);color:rgba(255,255,255,.6);padding:60px 5% 30p
       <div style="padding:0 20px 20px">
         <div class="product-actions">
           <a href="produit.php?slug=<?= e($prod['slug']??'') ?>" class="product-btn"><i class="fas fa-eye"></i> Détails</a>
+          <button type="button" class="product-btn-compare" data-compare-id="<?= (int)$prod['id'] ?>" data-compare-name="<?= e($prod['nom']) ?>" data-compare-model="<?= e($prod['modele'] ?? '') ?>"><i class="fas fa-scale-balanced"></i> Comparer</button>
           <a href="<?= e(whatsappLink($prod['nom'])) ?>" target="_blank" rel="noopener" class="product-btn-wa"><i class="fab fa-whatsapp"></i></a>
         </div>
       </div>
@@ -595,6 +618,22 @@ footer{background:var(--gray-900);color:rgba(255,255,255,.6);padding:60px 5% 30p
 <!-- WhatsApp Floating -->
 <a href="<?= e(whatsappLink()) ?>" target="_blank" rel="noopener" class="wa-float" title="Contactez-nous sur WhatsApp"><i class="fab fa-whatsapp"></i></a>
 
+<div class="compare-dock" id="compareDock" aria-live="polite">
+  <div class="compare-dock-head">
+    <div>
+      <div class="compare-dock-title"><i class="fas fa-scale-balanced"></i> Comparateur de produits</div>
+      <div class="compare-dock-sub">Ajoutez plusieurs produits puis ouvrez une comparaison detaillee.</div>
+    </div>
+  </div>
+  <div class="compare-dock-content">
+    <div class="compare-pills" id="comparePills"></div>
+    <div class="compare-dock-actions">
+      <button type="button" class="compare-clear" id="compareClear">Vider</button>
+      <a href="compare.php" class="compare-link" id="compareLaunch"><i class="fas fa-table-columns"></i> Comparer <span id="compareCount">0</span></a>
+    </div>
+  </div>
+</div>
+
 <script>
 // Hamburger
 document.getElementById('hamburger').addEventListener('click',function(){
@@ -625,6 +664,82 @@ document.querySelectorAll('.product-card,.avantage-card,.testi-card,.cat-card,.a
   el.style.transition='opacity .5s ease,transform .5s ease';
   obs.observe(el);
 });
+
+const compareStorageKey='matelcom_compare_products';
+const compareButtons=[...document.querySelectorAll('[data-compare-id]')];
+const compareDock=document.getElementById('compareDock');
+const comparePills=document.getElementById('comparePills');
+const compareCount=document.getElementById('compareCount');
+const compareLaunch=document.getElementById('compareLaunch');
+const compareClear=document.getElementById('compareClear');
+
+function readCompareProducts(){
+  try{
+    const raw=localStorage.getItem(compareStorageKey);
+    const parsed=raw?JSON.parse(raw):[];
+    return Array.isArray(parsed)?parsed:[];
+  }catch(e){return [];}
+}
+
+function writeCompareProducts(items){
+  localStorage.setItem(compareStorageKey, JSON.stringify(items));
+}
+
+function toggleCompareProduct(product){
+  const items=readCompareProducts();
+  const exists=items.some(item=>item.id===product.id);
+  const next=exists?items.filter(item=>item.id!==product.id):[...items, product];
+  writeCompareProducts(next);
+  renderCompareDock();
+}
+
+function removeCompareProduct(id){
+  writeCompareProducts(readCompareProducts().filter(item=>item.id!==id));
+  renderCompareDock();
+}
+
+function renderCompareDock(){
+  const items=readCompareProducts();
+  compareButtons.forEach(btn=>{
+    const active=items.some(item=>item.id===Number(btn.dataset.compareId));
+    btn.classList.toggle('active', active);
+    btn.innerHTML=active
+      ? '<i class="fas fa-check"></i> Ajoute'
+      : '<i class="fas fa-scale-balanced"></i> Comparer';
+  });
+
+  comparePills.innerHTML='';
+  items.forEach(item=>{
+    const pill=document.createElement('div');
+    pill.className='compare-pill';
+    pill.innerHTML='<span>'+item.name+(item.model?' - '+item.model:'')+'</span><button type="button" aria-label="Retirer"><i class="fas fa-times"></i></button>';
+    pill.querySelector('button').addEventListener('click', ()=>removeCompareProduct(item.id));
+    comparePills.appendChild(pill);
+  });
+
+  compareCount.textContent=String(items.length);
+  compareLaunch.href='compare.php?ids='+items.map(item=>item.id).join(',');
+  compareLaunch.style.pointerEvents=items.length ? 'auto' : 'none';
+  compareLaunch.style.opacity=items.length ? '1' : '.55';
+  compareDock.classList.toggle('open', items.length > 0);
+}
+
+compareButtons.forEach(btn=>{
+  btn.addEventListener('click', function(){
+    toggleCompareProduct({
+      id:Number(btn.dataset.compareId),
+      name:btn.dataset.compareName || '',
+      model:btn.dataset.compareModel || ''
+    });
+  });
+});
+
+compareClear.addEventListener('click', function(){
+  writeCompareProducts([]);
+  renderCompareDock();
+});
+
+renderCompareDock();
 </script>
 </body>
 </html>

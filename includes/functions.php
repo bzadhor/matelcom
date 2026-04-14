@@ -42,6 +42,20 @@ function getProduitBySlug($slug) {
     $s->execute([$slug]); return $s->fetch();
 }
 
+function getProduitsByIds(array $ids) {
+    $ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
+    if (!$ids) return [];
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $s = getDB()->prepare("SELECT * FROM produits WHERE statut=1 AND id IN ($placeholders)");
+    $s->execute($ids);
+    $rows = $s->fetchAll();
+    $byId = [];
+    foreach ($rows as $row) $byId[(int)$row['id']] = $row;
+    $ordered = [];
+    foreach ($ids as $id) if (isset($byId[$id])) $ordered[] = $byId[$id];
+    return $ordered;
+}
+
 function getCategories() {
     return getDB()->query("SELECT * FROM categories ORDER BY ordre ASC")->fetchAll();
 }
