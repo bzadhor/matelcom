@@ -126,6 +126,9 @@ tr:hover td{background:#fafbff;}
     <?php if (gh_has_page_permission('devis','read')): ?>
       <a href="devis.php" class="sb-link <?= ($activePage??'')==='devis'?'on':'' ?>"><span class="ico"><i class="fas fa-file-invoice"></i></span>Devis reçus</a>
     <?php endif; ?>
+    <?php if (gh_has_page_permission('devis_generateur','read')): ?>
+      <a href="devis_generateur.php" class="sb-link <?= ($activePage??'')==='devis_generateur'?'on':'' ?>"><span class="ico"><i class="fas fa-file-invoice-dollar"></i></span>Générer un devis</a>
+    <?php endif; ?>
 
     <div class="sb-sec">Contenu</div>
     <?php if (gh_has_page_permission('temoignages','read')): ?>
